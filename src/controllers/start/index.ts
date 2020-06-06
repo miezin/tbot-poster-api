@@ -5,17 +5,19 @@ import {
 } from 'telegraf';
 
 import { PosterService } from '../../api/poster';
-import { createCategoriesKeyboard } from '../../util/keyboards';
+import { createCategoriesKeyboard } from '../../keyboards/keyboards';
 import { SceneContextMessageUpdate } from 'telegraf/typings/stage';
-import { CartService } from '../../mocks/cart';
-import { ActionState } from '../../models/actionState';
+import { ActionState } from 'actionState';
+import Cart from '../../models/Cart';
 
 const start = new BaseScene('start');
 
 start.enter(async (ctx: SceneContextMessageUpdate) => {
   const { reference } = ctx.scene.state as ActionState;
+  const uid = String(ctx.from.id);
   const categories = await PosterService.getCategories();
-  const cartTotal = CartService.getTotal();
+  const cart = await Cart.findOne({_id: uid})
+  const cartTotal = cart ? cart.getTotal() : null;
   const keyboard = createCategoriesKeyboard(categories, cartTotal);
 
   if (reference) {
@@ -23,7 +25,7 @@ start.enter(async (ctx: SceneContextMessageUpdate) => {
   } else {
     ctx.reply('Выберите категорию 👇', Extra.markup(keyboard));
   }
-  
+
 });
 
 start.action(/catId/gi, (ctx: SceneContextMessageUpdate) => ctx.scene.enter('products'));
