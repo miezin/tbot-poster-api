@@ -1,6 +1,7 @@
 import axios from 'axios';
-import { Category, Product } from '../models/poster';
 import { POSTER_TOKEN } from '../config/secrets';
+import { Product } from '../models/Product';
+import { Category } from '../models/Category';
 
 const apiUrl = 'https://joinposter.com/api/';
 
