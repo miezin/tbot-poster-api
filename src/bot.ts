@@ -31,7 +31,7 @@ mongoose.connection.on('error', err => {
 mongoose.connection.on('open', () => {
   const bot = new Telegraf(TELEGRAM_TOKEN, {});
   const stage = new Stage([startScene, cartScene, productsScene]);
-  
+
   bot.use(session());
   bot.use(sessionSaver(mongoose));
   bot.use(stage.middleware());
