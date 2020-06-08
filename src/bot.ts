@@ -2,9 +2,13 @@ import {
   Telegraf,
   Stage,
   session,
+  Telegram,
+  Context,
+  Markup,
+  Extra
 } from 'telegraf';
 import { SceneContextMessageUpdate } from 'telegraf/typings/stage';
-import mongoose from 'mongoose';
+import mongoose, { HookNextFunction } from 'mongoose';
 
 import {
   TELEGRAM_TOKEN, MONGODB_URI
@@ -13,6 +17,7 @@ import startScene from './controllers/start';
 import productsScene from './controllers/products';
 import cartScene from './controllers/cart';
 import { sessionSaver } from './middlewares/session-saver';
+import { ContextMessageUpdate } from 'telegraf-context';
 
 mongoose.connect(MONGODB_URI, {
   useNewUrlParser: true,
@@ -36,7 +41,18 @@ mongoose.connection.on('open', () => {
   bot.use(sessionSaver(mongoose));
   bot.use(stage.middleware());
 
-  bot.start((ctx: SceneContextMessageUpdate) => ctx.scene.enter('start'));
-
+  bot.start((ctx: ContextMessageUpdate) => {
+    console.log(ctx);
+    console.log(ctx.scene.current);
+    const keyboard = Markup.keyboard(
+      [
+        ['Меню','Контакты'],
+        ['Оставить отзыв', 'Настройки']
+      ], {});
+    ctx.reply('Чем могу быть полезен', Extra.markup(keyboard.resize()))
+  });
+  bot.hears('Меню', (ctx: SceneContextMessageUpdate) => {
+    ctx.scene.enter('start');
+  })
   bot.launch();
 });

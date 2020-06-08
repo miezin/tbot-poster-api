@@ -15,11 +15,14 @@ export const sessionSaver = (mongoose: Mongoose) => {
     await next();
     await collection.updateOne(
       {
-        key: ctx.from.id,
-        firstName: ctx.from.first_name,
-        username: ctx.from.username
+        key: ctx.from.id
        },
-      { $set: { data: ctx.session } },
+      {
+        $set: { data: ctx.session,
+          firstName: ctx.from.first_name,
+          username: ctx.from.username
+        }
+      },
       { upsert: true }
       );
   }
