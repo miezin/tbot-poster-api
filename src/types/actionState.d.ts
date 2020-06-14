@@ -1,4 +1,5 @@
-import { Product } from "./poster";
+import { Product } from "../models/Product";
+
 
 export interface ActionState {
   catId?: string,
