@@ -5,14 +5,14 @@ import {
 } from 'telegraf';
 
 import { PosterService } from '../../api/poster';
-import { createCategoriesKeyboard } from '../../keyboards/keyboards';
 import { SceneContextMessageUpdate } from 'telegraf/typings/stage';
 import { ActionState } from 'actionState';
 import Cart from '../../models/Cart';
+import { createCategoriesKeyboard } from '../../keyboards/categories';
 
-const start = new BaseScene('start');
+const menu = new BaseScene('menu');
 
-start.enter(async (ctx: SceneContextMessageUpdate) => {
+menu.enter(async (ctx: SceneContextMessageUpdate) => {
   const { reference } = ctx.scene.state as ActionState;
   const uid = String(ctx.from.id);
   const categories = await PosterService.getCategories();
@@ -28,10 +28,4 @@ start.enter(async (ctx: SceneContextMessageUpdate) => {
 
 });
 
-start.action(/catId/gi, (ctx: SceneContextMessageUpdate) => ctx.scene.enter('products'));
-
-start.action(/cart/gi, (ctx: SceneContextMessageUpdate) => {
-  ctx.scene.enter('cart');
-});
-
-export default start;
+export default menu;

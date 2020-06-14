@@ -4,12 +4,13 @@ import {
 } from 'telegraf';
 
 import { PosterService } from '../../api/poster';
-import { createProductsKeyboard } from '../../keyboards/keyboards';
 import { SceneContextMessageUpdate } from 'telegraf/typings/stage';
 import { ContextMessageUpdate } from 'telegraf-context';
 import { ActionState } from 'actionState';
 import { emojiMap } from '../../config/emojiMap';
 import Cart from '../../models/Cart';
+import { createProductsKeyboard } from '../../keyboards/products';
+import { Notifier } from "../../config/notification";
 
 const addToCart = async (ctx: ContextMessageUpdate) => {
   const { prId } = JSON.parse(ctx.match.input);
@@ -25,18 +26,14 @@ const addToCart = async (ctx: ContextMessageUpdate) => {
   } else {
     cart = new Cart({
       _id: uid,
-      products: [product],
-      quantity: 1,
-      total: Number(product.price['1']) / 100,
+      products: [product]
     });
     await cart.save();
   }
 
-  const cartTotal = cart.getTotal();
-
-  const keyboard = createProductsKeyboard(products, cartTotal)
+  const keyboard = createProductsKeyboard(products, cart);
   ctx.editMessageReplyMarkup(keyboard);
-  ctx.answerCbQuery(`${product.product_name} в твоей корзине`);
+  ctx.answerCbQuery(`✅ ${product.productName} ${Notifier.addedToCart} ✅`);
 }
 
 const products = new BaseScene('products');
@@ -45,12 +42,11 @@ products.enter(async (ctx: SceneContextMessageUpdate) => {
   const uid = String(ctx.from.id);
   const catId = (ctx.scene.state as ActionState).catId || JSON.parse(ctx.callbackQuery.data).catId;
   const products = await PosterService.getProductsByCategoryId(catId);
-  const categoryName = products[0].category_name;
+  const categoryName = products[0].categoryName;
   const emoji = emojiMap[categoryName];
   const cart = await Cart.findOne({_id: uid});
-  const cartTotal = cart ? cart.getTotal() : null;
 
-  const keyboard = createProductsKeyboard(products, cartTotal);
+  const keyboard = createProductsKeyboard(products, cart);
 
   ctx.scene.state = { catId, products };
   ctx.editMessageText(`${emoji || ''}  ${categoryName}`, Extra.markup(keyboard));
@@ -60,15 +56,10 @@ products.leave(async (ctx: SceneContextMessageUpdate) => {
   ctx.scene.reset();
 });
 
-products.action(/prId/gi, addToCart)
-
-products.action(/cart/gi, (ctx: SceneContextMessageUpdate) => {
-  const { catId } = ctx.scene.state as ActionState;
-  ctx.scene.enter('cart', { catId });
-});
+products.action(/prId/gi, addToCart);
 
 products.action('back', (ctx: SceneContextMessageUpdate) => {
-  ctx.scene.enter('start', { reference: 'products' });
+  ctx.scene.enter('menu', { reference: 'products' });
 });
 
 export default products;
