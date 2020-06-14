@@ -1,8 +1,8 @@
-import { Mongoose, HookNextFunction } from "mongoose";
+import { Mongoose } from "mongoose";
 import { ContextMessageUpdate } from "telegraf-context";
 
 export const sessionSaver = (mongoose: Mongoose) => {
-  return async (ctx: ContextMessageUpdate, next: HookNextFunction) => {
+  return async (ctx: ContextMessageUpdate, next: () => Promise<void>) => {
     const { db } = mongoose.connection;
     const collection = db.collection('session');
     if (!Object.keys(ctx.session).length) {

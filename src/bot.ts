@@ -2,22 +2,21 @@ import {
   Telegraf,
   Stage,
   session,
-  Telegram,
-  Context,
-  Markup,
   Extra
 } from 'telegraf';
 import { SceneContextMessageUpdate } from 'telegraf/typings/stage';
-import mongoose, { HookNextFunction } from 'mongoose';
+import mongoose from 'mongoose';
 
 import {
   TELEGRAM_TOKEN, MONGODB_URI
 } from './config/secrets';
-import startScene from './controllers/start';
+import menuScene from './controllers/menu';
 import productsScene from './controllers/products';
-import cartScene from './controllers/cart';
 import { sessionSaver } from './middlewares/session-saver';
 import { ContextMessageUpdate } from 'telegraf-context';
+import {cartCtrl, cartResetCtrl, cartAddLastProductCtrl, cartDeleteLastProductCtrl, cartEdit} from './controllers/cart';
+import superWizard from './controllers/checkout';
+import { createMainKeyboard } from "./keyboards/main";
 
 mongoose.connect(MONGODB_URI, {
   useNewUrlParser: true,
@@ -33,26 +32,46 @@ mongoose.connection.on('error', err => {
   process.exit(1);
 });
 
+
 mongoose.connection.on('open', () => {
   const bot = new Telegraf(TELEGRAM_TOKEN, {});
-  const stage = new Stage([startScene, cartScene, productsScene]);
+  const stage = new Stage([
+    menuScene,
+    productsScene,
+    superWizard
+  ], {default: 'menu'});
 
   bot.use(session());
   bot.use(sessionSaver(mongoose));
   bot.use(stage.middleware());
 
   bot.start((ctx: ContextMessageUpdate) => {
-    console.log(ctx);
-    console.log(ctx.scene.current);
-    const keyboard = Markup.keyboard(
-      [
-        ['Меню','Контакты'],
-        ['Оставить отзыв', 'Настройки']
-      ], {});
-    ctx.reply('Чем могу быть полезен', Extra.markup(keyboard.resize()))
+    ctx.reply('Чем могу быть полезен', Extra.markup(createMainKeyboard()));
   });
+
   bot.hears('Меню', (ctx: SceneContextMessageUpdate) => {
-    ctx.scene.enter('start');
-  })
-  bot.launch();
+    ctx.scene.enter('menu');
+  });
+
+  // category entry action
+  bot.action(/catId/gi, (ctx: SceneContextMessageUpdate) => ctx.scene.enter('products'));
+
+  // cart actions
+  bot.action(/cart/g, cartCtrl);
+  bot.action('reset', cartResetCtrl);
+  bot.action('edit', cartEdit);
+  // bot.action('addLast', cartAddLastProductCtrl);
+  // bot.action('deleteLast', cartDeleteLastProductCtrl);
+  bot.action('close', (ctx: SceneContextMessageUpdate) => {
+    ctx.deleteMessage();
+  });
+
+  // checkout
+  bot.command('checkout', (ctx: SceneContextMessageUpdate) => {
+    ctx.scene.enter('checkout');
+  });
+
+  bot.hears('Корзина', cartCtrl);
+
+  bot.startPolling();
 });
