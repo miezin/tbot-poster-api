@@ -31,7 +31,6 @@ export const createSelectToEditKeyboard = (productQuantity: number): Markup & In
   const keyboard = [[Markup.callbackButton(`Назад`, 'backFromEdit')]];
   let row = [];
   let _i = 0;
-  console.log(productQuantity)
   while (_i <= productQuantity) {
     _i += 1;
     row.push(Markup.callbackButton(`${_i}`, JSON.stringify({edit: _i})))
