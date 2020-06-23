@@ -3,6 +3,7 @@ import { Product } from "../models/Product";
 import { InlineKeyboardMarkup } from "telegraf/typings/telegram-types";
 import { CallbackButton } from "telegraf/typings/markup";
 import {CartUi} from "../config/texts";
+import { CartResultProduct } from "../models/Cart";
 
 
 export const createCartButton = (cartTotal: number, callBackQuery: string): CallbackButton => {
@@ -27,38 +28,41 @@ export const createCartKeyboard = (
   return Markup.inlineKeyboard(keyboard, {});
 }
 
-export const createSelectToEditKeyboard = (productQuantity: number): Markup & InlineKeyboardMarkup => {
-  const keyboard = [[Markup.callbackButton(`Назад`, 'backFromEdit')]];
-  let row = [];
-  let _i = 0;
-  while (_i <= productQuantity) {
-    _i += 1;
-    row.push(Markup.callbackButton(`${_i}`, JSON.stringify({edit: _i})))
+export const createSelectToEditKeyboard = (cartProducts: CartResultProduct[]): Markup & InlineKeyboardMarkup => {
+  const keyboard = [[Markup.callbackButton(CartUi.back, 'backFromEdit')]];
+  let row: CallbackButton[] = [];
+
+  cartProducts.forEach(({id}, idx) => {
+    row.push(Markup.callbackButton(`${idx + 1}`, JSON.stringify({prIdToEdit: id})));
 
     if (row.length === 6) {
       keyboard.push(row);
       row = []
     }
-  }
+  })
 
   if (row.length) {
     keyboard.push(row);
   }
 
-  keyboard.push()
-
   return Markup.inlineKeyboard(keyboard).resize();
 }
 
-export const createEditCartKeyBoard = (product: Product, productQuantity: Number): Markup & InlineKeyboardMarkup => {
-  const { productId } = product;
+export const createEditCartKeyBoard = (product: CartResultProduct): Markup & InlineKeyboardMarkup => {
+  const { id, name, amount } = product;
+
   const keyboard = [
-    Markup.callbackButton(CartUi.remove, JSON.stringify({remove: productId})),
-    Markup.callbackButton(`${productQuantity}`, ''),
-    Markup.callbackButton(CartUi.add, JSON.stringify({add: productId})),
+    [Markup.callbackButton(`${name}`, 'dummy')],
+    [
+      Markup.callbackButton(CartUi.reduce, JSON.stringify({cartReducePr: id})),
+      Markup.callbackButton(`${amount} шт.`, 'dummy'),
+      Markup.callbackButton(CartUi.increace, JSON.stringify({cartIncreacePr: id})),
+      Markup.callbackButton(CartUi.delete, JSON.stringify({cartDeletePr: id}))
+    ],
+    [Markup.callbackButton(CartUi.back, 'backFromPrEdit')]
   ]
 
-  return Markup.inlineKeyboard([keyboard]);
+  return Markup.inlineKeyboard(keyboard);
 }
 
 export const createCheckoutButton = (cartQuantity: number, cartTotal: number): CallbackButton => {

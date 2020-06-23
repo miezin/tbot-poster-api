@@ -13,11 +13,17 @@ import { createProductsKeyboard } from '../../keyboards/products';
 import { Notifier } from "../../config/notification";
 
 const addToCart = async (ctx: ContextMessageUpdate) => {
-  const { prId } = JSON.parse(ctx.match.input);
+  const { addPrId } = JSON.parse(ctx.match.input);
   const { products } = ctx.scene.state as ActionState;
   const uid = String(ctx.from.id);
 
-  const product = await PosterService.getProductById(prId);
+  const product = await PosterService.getProductById(addPrId);
+
+  if (!product) {
+    ctx.answerCbQuery(`${Notifier.error}`);
+    return;
+  }
+
   let cart = await Cart.findOne({_id: uid});
 
   if (cart) {
@@ -56,7 +62,7 @@ products.leave(async (ctx: SceneContextMessageUpdate) => {
   ctx.scene.reset();
 });
 
-products.action(/prId/gi, addToCart);
+products.action(/addPrId/gi, addToCart);
 
 products.action('back', (ctx: SceneContextMessageUpdate) => {
   ctx.scene.enter('menu', { reference: 'products' });

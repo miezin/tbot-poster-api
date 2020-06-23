@@ -8,7 +8,7 @@ export const generateCartList = async (cart: Cart): Promise<string> => {
   if (!cart) {
     text += `\n<b>${CartUi.placeholder}</b>\n`;
   } else {
-    const productsByCategories = await cart.getGroupedProducts();
+    const productsByCategories = await cart.getGroupedProductsByCategory();
     const cartTotal = cart.getTotal();
     let index = 0;
 

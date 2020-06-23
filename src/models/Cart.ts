@@ -9,7 +9,8 @@ const groupByNameQuery = {
     amount: {$sum: 1},
     category: {$first: "$products.categoryName"},
     price: {$first: "$products.price"},
-    total: {$sum: "$products.price"}
+    total: {$sum: "$products.price"},
+    id: {$first: "$products.productId"}
   }
 };
 
@@ -22,10 +23,22 @@ const groupByCategoryQuery = {
   }
 };
 
-const replaceIdQuery = {
+const replaceIdQueryForCategory = {
   $project: {
     category: "$_id",
     products: "$products",
+    _id: false
+  }
+};
+
+const replaceIdQueryForProduct = {
+  $project: {
+    name: "$_id",
+    category: "$category",
+    price: "$price",
+    total: "$total",
+    amount: "$amount",
+    id: "$id",
     _id: false
   }
 };
@@ -35,6 +48,7 @@ export interface CartResultProduct {
   price: Number,
   total: Number,
   amount: Number
+  id: String,
 }
 
 export interface CartResultCategory {
@@ -49,9 +63,11 @@ export interface Cart extends Document {
   addProduct: (product: Product) => void;
   getQuantity: () => number;
   getTotal: () => number;
-  getGroupedProducts: () => Promise<CartResultCategory[]>
-  getGroupedProductsQuantity: () => Promise<number>
+  getGroupedProductsByCategory: () => Promise<CartResultCategory[]>
+  getGroupedProducts: () => Promise<CartResultProduct[]>
   getQuantityById: (id: string) => number;
+  getProductById: (id: string) => Product;
+  deleteById: (id: string) => boolean;
   reset: () => void;
 }
 
@@ -64,26 +80,27 @@ CartSchema.methods.addProduct = function (product: Product): void {
   this.products.push(product);
 }
 
-CartSchema.methods.getGroupedProducts = async function (): Promise<CartResultCategory[]> {
+CartSchema.methods.getGroupedProductsByCategory = async function (): Promise<CartResultCategory[]> {
   const groupedProducts = await mongoose.model('Cart').aggregate([
     {$match: {_id: this._id}},
     {$unwind: "$products"},
     groupByNameQuery,
     groupByCategoryQuery,
-    replaceIdQuery
+    replaceIdQueryForCategory
   ]);
 
   return groupedProducts;
 }
 
-CartSchema.methods.getGroupedProductsQuantity = async function (): Promise<number> {
-  const groupedProductsByName = await mongoose.model('Cart').aggregate([
+CartSchema.methods.getGroupedProducts = async function (): Promise<CartResultProduct[]> {
+  const groupedProducts = await mongoose.model('Cart').aggregate([
     {$match: {_id: this._id}},
     {$unwind: "$products"},
     groupByNameQuery,
+    replaceIdQueryForProduct
   ])
 
-  return groupedProductsByName.length;
+  return groupedProducts;
 }
 
 CartSchema.methods.getQuantity = function (): number {
@@ -100,6 +117,21 @@ CartSchema.methods.getQuantityById = function (id: string): number {
   const products = this.products.filter(({ productId }: Product) => (productId === id));
   return products.length;
 }
+
+CartSchema.methods.deleteById = function(id: string): boolean {
+  const idx = this.products.findIndex(({ productId }: Product) => productId === id);
+  if (~idx) {
+    this.products.splice(idx, 1);
+    return true;
+  }
+
+  return false;
+}
+
+CartSchema.methods.getProductById = function(id: string): Product {
+  return this.products.find(({ productId }) => productId === id);
+}
+
 
 CartSchema.methods.reset = function (): void {
   this.products = [];

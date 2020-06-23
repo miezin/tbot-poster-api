@@ -11,7 +11,7 @@ export const createCategoriesKeyboard = (categories: Category[], cartTotal?: num
     return [Markup.callbackButton(`${emoji || ''}  ${categoryName}`, JSON.stringify({ catId: categoryId }))];
   });
   keyboard.push([
-    createCartButton(cartTotal, JSON.stringify({ cart: 'menu' })),
+    createCartButton(cartTotal, 'cart'),
   ])
 
   return Markup.inlineKeyboard(keyboard, {});

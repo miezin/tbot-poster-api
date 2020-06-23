@@ -14,7 +14,7 @@ import menuScene from './controllers/menu';
 import productsScene from './controllers/products';
 import { sessionSaver } from './middlewares/session-saver';
 import { ContextMessageUpdate } from 'telegraf-context';
-import {cartCtrl, cartResetCtrl, cartAddLastProductCtrl, cartDeleteLastProductCtrl, cartEdit} from './controllers/cart';
+import {cartCtrl, cartResetCtrl, cartEdit, cartEditProduct, cartReduceProductQuantity} from './controllers/cart';
 import superWizard from './controllers/checkout';
 import { createMainKeyboard } from "./keyboards/main";
 
@@ -57,11 +57,13 @@ mongoose.connection.on('open', () => {
   bot.action(/catId/gi, (ctx: SceneContextMessageUpdate) => ctx.scene.enter('products'));
 
   // cart actions
-  bot.action(/cart/g, cartCtrl);
+  bot.action('cart', cartCtrl);
   bot.action('reset', cartResetCtrl);
   bot.action('edit', cartEdit);
-  // bot.action('addLast', cartAddLastProductCtrl);
-  // bot.action('deleteLast', cartDeleteLastProductCtrl);
+  bot.action('backFromEdit', cartCtrl);
+  bot.action(/prIdToEdit/g, cartEditProduct);
+  bot.action('backFromPrEdit', cartEdit);
+  bot.action(/cartReducePr/g, cartReduceProductQuantity)
   bot.action('close', (ctx: SceneContextMessageUpdate) => {
     ctx.deleteMessage();
   });
