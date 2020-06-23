@@ -29,7 +29,7 @@ export const createCartKeyboard = (
 }
 
 export const createSelectToEditKeyboard = (cartProducts: CartResultProduct[]): Markup & InlineKeyboardMarkup => {
-  const keyboard = [[Markup.callbackButton(CartUi.back, 'backFromEdit')]];
+  const keyboard = [[Markup.callbackButton(CartUi.back, 'backFromEdit', !Boolean(cartProducts.length))]];
   let row: CallbackButton[] = [];
 
   cartProducts.forEach(({id}, idx) => {

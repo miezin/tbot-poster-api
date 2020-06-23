@@ -53,17 +53,64 @@ export const cartEditProduct = async (ctx: SceneContextMessageUpdate): Promise<v
   ctx.editMessageText(await generateCartList(cart), Extra.HTML().markup(keyboard));
 }
 
-export const cartReduceProductQuantity = async (ctx: SceneContextMessageUpdate): Promise<void>  => {
-  const { cartReducePr } = JSON.parse(ctx.callbackQuery.data);
+export const editProductQuantity = async (ctx: SceneContextMessageUpdate, productId: string, action: 'add' | 'delete') => {
   const uid = String(ctx.from.id);
   const cart = await Cart.findOne({_id: uid});
-  cart.deleteById('1')
+
+  if (action === 'add') {
+    await cart.addOneMoreProduct(productId);
+  } else {
+    await cart.deleteById(productId);
+  }
+
+  await cart.save();
+
+  const products = cart ? await cart.getGroupedProducts() : [];
+  const productToEdit = products.find(({id}) => id === productId);
+  const balance = await cart.getQuantityById(productId);
+
+  if (!products.length) {
+    ctx.deleteMessage();
+    ctx.answerCbQuery(Notifier.clearedCart);
+    ctx.scene.enter('menu');
+    return;
+  }
+
+  if (balance === 0) {
+    const keyboard = createSelectToEditKeyboard(products);
+    ctx.editMessageText(await generateCartList(cart), Extra.HTML().markup(keyboard));
+    return;
+  }
+
+  const keyboard = createEditCartKeyBoard(productToEdit);
+  ctx.editMessageText(await generateCartList(cart), Extra.HTML().markup(keyboard));
 }
 
-// export const cartAddLastProductCtrl = (ctx: SceneContextMessageUpdate): void => {
-//   cartEditLastProduct(ctx, 'add');
-// }
+export const cartReduceProductQuantity = (ctx: SceneContextMessageUpdate): void  => {
+  const { cartReducePr } = JSON.parse(ctx.callbackQuery.data);
+  editProductQuantity(ctx, cartReducePr, 'delete');
+}
 
-// export const cartDeleteLastProductCtrl = (ctx: SceneContextMessageUpdate): void => {
-//   cartEditLastProduct(ctx, 'delete');
-// }
+export const cartIncraseProductQuantity = (ctx: SceneContextMessageUpdate): void  => {
+  const { cartIncreacePr } = JSON.parse(ctx.callbackQuery.data);
+  editProductQuantity(ctx, cartIncreacePr, 'add');
+}
+
+export const cartDeleteProduct = async (ctx: SceneContextMessageUpdate): Promise<void> => {
+  const { cartDeletePr } = JSON.parse(ctx.callbackQuery.data);
+  const uid = String(ctx.from.id);
+  const cart = await Cart.findOne({_id: uid});
+  await cart.deleteAllById(cartDeletePr);
+  await cart.save();
+  const products = cart ? await cart.getGroupedProducts() : [];
+
+  if (!products.length) {
+    ctx.deleteMessage();
+    ctx.answerCbQuery(Notifier.clearedCart);
+    ctx.scene.enter('menu');
+    return;
+  }
+
+  const keyboard = createSelectToEditKeyboard(products);
+  ctx.editMessageText(await generateCartList(cart), Extra.HTML().markup(keyboard));
+}
