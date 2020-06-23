@@ -62,12 +62,13 @@ export interface Cart extends Document {
 
   addProduct: (product: Product) => void;
   getQuantity: () => number;
+  getQuantityById: (id: string) => number;
   getTotal: () => number;
   getGroupedProductsByCategory: () => Promise<CartResultCategory[]>
   getGroupedProducts: () => Promise<CartResultProduct[]>
-  getQuantityById: (id: string) => number;
-  getProductById: (id: string) => Product;
-  deleteById: (id: string) => boolean;
+  addOneMoreProduct: (id: string) => void;
+  deleteById: (id: string) => void;
+  deleteAllById: (id: string) => void;
   reset: () => void;
 }
 
@@ -85,7 +86,9 @@ CartSchema.methods.getGroupedProductsByCategory = async function (): Promise<Car
     {$match: {_id: this._id}},
     {$unwind: "$products"},
     groupByNameQuery,
+    {$sort: { _id: 1}},
     groupByCategoryQuery,
+    {$sort: { _id: 1}},
     replaceIdQueryForCategory
   ]);
 
@@ -97,6 +100,7 @@ CartSchema.methods.getGroupedProducts = async function (): Promise<CartResultPro
     {$match: {_id: this._id}},
     {$unwind: "$products"},
     groupByNameQuery,
+    {$sort: { _id: 1, category: 1 }},
     replaceIdQueryForProduct
   ])
 
@@ -118,18 +122,19 @@ CartSchema.methods.getQuantityById = function (id: string): number {
   return products.length;
 }
 
-CartSchema.methods.deleteById = function(id: string): boolean {
+CartSchema.methods.deleteById = function(id: string): void {
   const idx = this.products.findIndex(({ productId }: Product) => productId === id);
-  if (~idx) {
-    this.products.splice(idx, 1);
-    return true;
-  }
-
-  return false;
+  this.products.splice(idx, 1);
 }
 
-CartSchema.methods.getProductById = function(id: string): Product {
-  return this.products.find(({ productId }) => productId === id);
+CartSchema.methods.deleteAllById = function(id: string): void {
+  const editedProducts = this.products.filter(({ productId }: Product) => productId !== id);
+  this.products = editedProducts;
+}
+
+CartSchema.methods.addOneMoreProduct = function(id: string): void {
+  const product = this.products.find(({ productId }: Product) => productId === id);
+  this.addProduct(product);
 }
 
 
