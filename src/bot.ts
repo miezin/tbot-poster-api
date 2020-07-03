@@ -1,5 +1,6 @@
 import {
   Telegraf,
+  Telegram,
   Stage,
   session,
   Extra
@@ -15,8 +16,9 @@ import productsScene from './controllers/products';
 import { sessionSaver } from './middlewares/session-saver';
 import { ContextMessageUpdate } from 'telegraf-context';
 import {cartCtrl, cartResetCtrl, cartEdit, cartEditProduct, cartReduceProductQuantity, cartIncraseProductQuantity, cartDeleteProduct} from './controllers/cart';
-import superWizard from './controllers/checkout';
+import superWizard, { submitOrder, cancelOrder } from './controllers/checkout';
 import { createMainKeyboard } from "./keyboards/main";
+import { updateUserActivity } from './middlewares/update-user-activity';
 
 mongoose.connect(MONGODB_URI, {
   useNewUrlParser: true,
@@ -43,6 +45,7 @@ mongoose.connection.on('open', () => {
 
   bot.use(session());
   bot.use(sessionSaver(mongoose));
+  bot.use(updateUserActivity);
   bot.use(stage.middleware());
 
   bot.start((ctx: ContextMessageUpdate) => {
@@ -70,12 +73,17 @@ mongoose.connection.on('open', () => {
     ctx.deleteMessage();
   });
 
-  // checkout
-  bot.command('checkout', (ctx: SceneContextMessageUpdate) => {
+  // checkout actions
+  bot.action('checkout', (ctx: SceneContextMessageUpdate) => {
     ctx.scene.enter('checkout');
-  });
+  })
+  bot.action(/orderSubmit/g, submitOrder)
+  bot.action(/orderCancel/g, cancelOrder)
 
   bot.hears('Корзина', cartCtrl);
 
   bot.startPolling();
 });
+
+const telegram = new Telegram(TELEGRAM_TOKEN, {});
+export default telegram;
