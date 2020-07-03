@@ -4,8 +4,7 @@ import { HookNextFunction } from 'mongoose';
 
 export const updateUserActivity = async (ctx: ContextMessageUpdate, next: HookNextFunction) => {
   const { id: userId, first_name, last_name, username, language_code } = ctx.from;
-
-  const { id: chatId } = (ctx.update.message || ctx.update.callback_query.message).chat;
+  const { id: chatId } = await ctx.getChat();
   await User.findOneAndUpdate(
     {
       userId: String(userId)
