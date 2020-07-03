@@ -9,6 +9,7 @@ import User from "../../models/User";
 import Order from "../../models/Order"
 import { Notifier } from "../../config/notification";
 import { CheckoutKeyboard, CheckoutUi } from "../../config/texts";
+import { PosterService } from "../../api/poster";
 
 // TODO refactoring
 
@@ -109,16 +110,17 @@ const commentStepCtrl = async (ctx: ContextMessageUpdate) => {
 
 export const submitOrder = async (ctx: ContextMessageUpdate) => {
   const { orderSubmit } = JSON.parse(ctx.callbackQuery.data);
-  const order = await Order.findOneAndUpdate(
-    {_id: orderSubmit},
-    {
-      $set: {
-        status: 'confirmed'
-      }
-    });
+  const order = await Order.findOne({_id: orderSubmit});
+  const sucessOrderId = await PosterService.createOrder(order);
+  if (sucessOrderId) {
+    order.status = 'confirmed'
+  } else {
+    order.status = 'api_error'
+  }
 
   // TODO replace mock message to real after adding creation over api
-  ctx.editMessageText(CheckoutUi.successMessage);
+  const message = CheckoutUi.successMessage.replace('{N}', sucessOrderId);
+  ctx.editMessageText(message);
 }
 
 export const cancelOrder = async (ctx: ContextMessageUpdate) => {
