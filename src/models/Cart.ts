@@ -2,6 +2,9 @@ import mongoose, {Document, Schema} from 'mongoose';
 import {Product, ProductSchema} from './Product';
 import {emojiMap} from "../config/emojiMap";
 
+// TODO rewrite cart model to grouped
+// For example: the method of adding should find the product and add the quantity
+// so far it is just pushing the product to the list without grouping
 
 const groupByNameQuery = {
   $group: {
@@ -44,11 +47,11 @@ const replaceIdQueryForProduct = {
 };
 
 export interface CartResultProduct {
-  name: String,
-  price: Number,
-  total: Number,
-  amount: Number
-  id: String,
+  name: String;
+  price: Number;
+  total: Number;
+  amount: Number;
+  id: String;
 }
 
 export interface CartResultCategory {
