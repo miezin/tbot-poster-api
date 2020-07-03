@@ -16,6 +16,7 @@ export const cartCtrl = async (ctx: SceneContextMessageUpdate): Promise<void> =>
   const total = cart ? cart.getTotal() : 0;
   const quantity = cart ? cart.getQuantity() : 0;
   const keyboard = createCartKeyboard(products, total, quantity);
+
   if (!products.length && ctx.callbackQuery) {
     ctx.answerCbQuery(Notifier.emptyCart);
   } else if (ctx.callbackQuery?.data === 'backFromEdit') {
@@ -28,6 +29,7 @@ export const cartCtrl = async (ctx: SceneContextMessageUpdate): Promise<void> =>
 export const cartResetCtrl = async (ctx: SceneContextMessageUpdate): Promise<void>  => {
   const uid = String(ctx.from.id);
   const cart = await Cart.findOne({_id: uid});
+
   cart.reset();
   await cart.save();
   ctx.deleteMessage();
@@ -40,6 +42,7 @@ export const cartEdit = async (ctx: SceneContextMessageUpdate): Promise<void> =>
   const cart = await Cart.findOne({_id: uid});
   const cartProducts = cart ? await cart.getGroupedProducts() : [];
   const keyboard = createSelectToEditKeyboard(cartProducts);
+
   ctx.editMessageText(await generateCartList(cart), Extra.HTML().markup(keyboard));
 }
 
@@ -50,6 +53,7 @@ export const cartEditProduct = async (ctx: SceneContextMessageUpdate): Promise<v
   const products = cart ? await cart.getGroupedProducts() : [];
   const productToEdit = products.find(({id}) => id === prIdToEdit);
   const keyboard = createEditCartKeyBoard(productToEdit);
+
   ctx.editMessageText(await generateCartList(cart), Extra.HTML().markup(keyboard));
 }
 
@@ -66,7 +70,6 @@ export const editProductQuantity = async (ctx: SceneContextMessageUpdate, produc
   await cart.save();
 
   const products = cart ? await cart.getGroupedProducts() : [];
-  const productToEdit = products.find(({id}) => id === productId);
   const balance = await cart.getQuantityById(productId);
 
   if (!products.length) {
@@ -77,13 +80,12 @@ export const editProductQuantity = async (ctx: SceneContextMessageUpdate, produc
   }
 
   if (balance === 0) {
-    const keyboard = createSelectToEditKeyboard(products);
-    ctx.editMessageText(await generateCartList(cart), Extra.HTML().markup(keyboard));
+    cartEdit(ctx);
     return;
   }
 
-  const keyboard = createEditCartKeyBoard(productToEdit);
-  ctx.editMessageText(await generateCartList(cart), Extra.HTML().markup(keyboard));
+  ctx.callbackQuery.data = JSON.stringify({prIdToEdit: productId});
+  cartEditProduct(ctx);
 }
 
 export const cartReduceProductQuantity = (ctx: SceneContextMessageUpdate): void  => {
