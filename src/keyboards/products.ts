@@ -9,12 +9,12 @@ export const createProductsKeyboard = (products: Product[], cart: Cart): Markup 
     const { productName, productId, price } = product;
     const amountInCart = cart ? cart.getQuantityById(productId) : 0;
     const amountInCartText = amountInCart ? `🛒 (${amountInCart})` : '';
-    return [Markup.callbackButton(`${productName}  - ${price}₴ ${amountInCartText}`, JSON.stringify({ prId: productId }))];
+    return [Markup.callbackButton(`${productName}  - ${price}₴ ${amountInCartText}`, JSON.stringify({ addPrId: productId }))];
   });
   const totalInCart = cart ? cart.getTotal() : 0;
   keyboard.push([
     Markup.callbackButton('⬅️ Назад', 'back'),
-    createCartButton(totalInCart, JSON.stringify({ 'cart': 'products' }))
+    createCartButton(totalInCart, 'cart')
   ]);
 
   return Markup.inlineKeyboard(keyboard, {});

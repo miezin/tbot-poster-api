@@ -4,6 +4,7 @@ import {Ingredient, Product} from '../models/Product';
 import {Category} from '../models/Category';
 import {IngredientResponse, ProductResponse} from "../models/ProductResponse";
 import {CategoryResponse} from "../models/CategoryResponse";
+import products from '../controllers/products';
 
 const apiUrl = 'https://joinposter.com/api/';
 
@@ -26,7 +27,7 @@ const convertCategory = (category: CategoryResponse): Category => {
   }
 }
 
-const convertProduct = (product: ProductResponse): Product => {
+const convertProduct = (product: ProductResponse): Product => {;
   return {
     categoryName: product.category_name,
     isHidden: !!Number(product.hidden),
@@ -60,7 +61,6 @@ class Poster {
       category_id: id
     }
     const response = await axios.get(`${apiUrl}menu.getProducts`, {params});
-
     return response.data.response.map(convertProduct);
   }
 
@@ -72,6 +72,11 @@ class Poster {
 
     const response = await axios.get(`${apiUrl}menu.getProduct`, {params});
     const product = response.data.response;
+
+    if (!product) {
+      return null;
+    }
+
     return convertProduct(product);
   }
 }

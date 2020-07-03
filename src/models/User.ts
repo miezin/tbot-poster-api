@@ -1,37 +1,31 @@
 import mongoose, { Document } from 'mongoose';
-import { ActionState } from "actionState";
 
 export interface User extends Document {
-  _id: string;
-  created: number;
+  userId: string;
+  chatId: string;
+  createdAt: Date;
   username: string;
-  name: string;
-  lastActivity: number;
+  firstName: string;
+  lastName: string;
+  phone?: string;
+  lastActivity: Date;
   language: 'en' | 'ru' | 'ua';
-  sessionData: {
-    __scenes: {
-      current: string
-    },
-    state: ActionState
-  }
 }
 
 export const UserSchema = new mongoose.Schema({
-  _id: String,
-  created: Number,
+  userId: String,
+  chatId: String,
+  createdAt: Date,
   username: String,
   firstName: String,
   lastName: String,
   phone: String,
-  lastActivity: Number,
+  lastActivity: Date,
   language: String,
-  sessionData: {
-    __scenes: {
-      current: String
-    },
-    state: Object
-  }
-}, { _id: false })
+}, {
+    _id: false,
+    timestamps: {
+      createdAt: 'createdAt', updatedAt: 'lastActivity' } })
 
-const User = mongoose.model<User>('User', UserSchema);
-export default User;
+const user = mongoose.model<User>('User', UserSchema);
+export default user;
