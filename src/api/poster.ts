@@ -1,10 +1,10 @@
 import axios from 'axios';
 import {POSTER_TOKEN} from '../config/secrets';
-import {Ingredient, Product} from '../models/Product';
+import product, {Ingredient, Product} from '../models/Product';
 import {Category} from '../models/Category';
 import {IngredientResponse, ProductResponse} from "../models/ProductResponse";
 import {CategoryResponse} from "../models/CategoryResponse";
-import products from '../controllers/products';
+import { Order } from '../models/Order';
 
 const apiUrl = 'https://joinposter.com/api/';
 
@@ -78,6 +78,34 @@ class Poster {
     }
 
     return convertProduct(product);
+  }
+
+  async createOrder({
+    phone,
+    firstName,
+    comment,
+    products
+  }: Order ): Promise<any> { // TODO add incomingOrder response interface
+    const params = {
+      token: this.token
+    }
+
+    const payload = {
+      spot_id: 1,
+      phone: phone,
+      first_name: firstName,
+      comment: comment,
+      products: products.map(({id, amount}) => {
+        return {
+          product_id: id,
+          count: amount
+        }
+      })
+    }
+
+    const response = await axios.post(`${apiUrl}incomingOrders.createIncomingOrder`, payload, {params});
+
+    return response.data.response;
   }
 }
 

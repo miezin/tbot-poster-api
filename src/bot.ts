@@ -20,6 +20,12 @@ import superWizard, { submitOrder, cancelOrder } from './controllers/checkout';
 import { createMainKeyboard } from "./keyboards/main";
 import { updateUserActivity } from './middlewares/update-user-activity';
 
+// TODO
+// 1. add error handling middlewares
+// on error send message to user and show start menu to prevent any freezing in ui, buttons etc
+// 2. checking is_hide in products and categoires reponse, to hide unused items
+// 3. added weights, ingredients ?? description
+
 mongoose.connect(MONGODB_URI, {
   useNewUrlParser: true,
   useFindAndModify: false

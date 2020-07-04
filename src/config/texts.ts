@@ -34,5 +34,5 @@ export enum CheckoutUi {
   orderSubmit = '✅ Заказ подтверждаю',
   orderCancel = '❌ Отменить',
   orderCancaled = 'Закаказ удален',
-  successMessage = 'Заказ №__ оформлен. Спасибо. В ближайшее время мы свяжемся с Вами'
+  successMessage = 'Заказ №{N} оформлен. Спасибо. В ближайшее время мы свяжемся с Вами'
 }

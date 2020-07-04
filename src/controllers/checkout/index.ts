@@ -9,6 +9,7 @@ import User from "../../models/User";
 import Order from "../../models/Order"
 import { Notifier } from "../../config/notification";
 import { CheckoutKeyboard, CheckoutUi } from "../../config/texts";
+import { PosterService } from "../../api/poster";
 
 // TODO refactoring
 
@@ -107,18 +108,35 @@ const commentStepCtrl = async (ctx: ContextMessageUpdate) => {
   `, Extra.markup(createConfirmOrderKeyboard(order._id)));
 }
 
+// TODO add status enum for orders, refactoring submit ctrl
+
 export const submitOrder = async (ctx: ContextMessageUpdate) => {
   const { orderSubmit } = JSON.parse(ctx.callbackQuery.data);
-  const order = await Order.findOneAndUpdate(
-    {_id: orderSubmit},
-    {
-      $set: {
-        status: 'confirmed'
-      }
-    });
+  const uid = String(ctx.from.id);
+  const order = await Order.findOne({_id: orderSubmit});
 
-  // TODO replace mock message to real after adding creation over api
-  ctx.editMessageText(CheckoutUi.successMessage);
+  if (order.status === 'confirmed' || order.status === 'loading') {
+    return;
+  }
+
+  order.status = 'loading';
+  await order.save();
+
+  const sucessOrder = await PosterService.createOrder(order);
+
+  if (sucessOrder.incoming_order_id) {
+    order.status = 'confirmed'
+    await order.save();
+  } else {
+    order.status = 'api_error'
+  }
+
+  const cart = await Cart.findOne({_id: uid});
+  cart.reset();
+  await cart.save();
+
+  const message = CheckoutUi.successMessage.replace('{N}', sucessOrder.incoming_order_id);
+  ctx.editMessageText(message);
 }
 
 export const cancelOrder = async (ctx: ContextMessageUpdate) => {
