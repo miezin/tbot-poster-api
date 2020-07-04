@@ -80,13 +80,12 @@ class Poster {
     return convertProduct(product);
   }
 
-  // mocked
   async createOrder({
     phone,
     firstName,
     comment,
     products
-  }: Order ): Promise<string> {
+  }: Order ): Promise<any> { // TODO add incomingOrder response interface
     const params = {
       token: this.token
     }
@@ -104,8 +103,9 @@ class Poster {
       })
     }
 
-    console.log(JSON.stringify(payload))
-    return Promise.resolve('1');
+    const response = await axios.post(`${apiUrl}incomingOrders.createIncomingOrder`, payload, {params});
+
+    return response.data.response;
   }
 }
 
