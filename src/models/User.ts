@@ -10,6 +10,7 @@ export interface User extends Document {
   phone?: string;
   lastActivity: Date;
   language: 'en' | 'ru' | 'ua';
+  isBanned: boolean;
 }
 
 export const UserSchema = new mongoose.Schema({
@@ -22,6 +23,7 @@ export const UserSchema = new mongoose.Schema({
   phone: String,
   lastActivity: Date,
   language: String,
+  isBanned: {type: Boolean, default: false}
 }, {
     _id: false,
     timestamps: {

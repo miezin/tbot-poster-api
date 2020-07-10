@@ -2,7 +2,7 @@ import axios from 'axios';
 import {POSTER_TOKEN} from '../config/secrets';
 import product, {Ingredient, Product} from '../models/Product';
 import {Category} from '../models/Category';
-import {IngredientResponse, ProductResponse} from "../models/ProductResponse";
+import {IngredientResponse, ProductResponse, Spot} from "../models/ProductResponse";
 import {CategoryResponse} from "../models/CategoryResponse";
 import { Order } from '../models/Order';
 
@@ -25,6 +25,19 @@ const convertCategory = (category: CategoryResponse): Category => {
     parentCategory: category.parent_category,
     isHidden: !!Number(category.category_hidden)
   }
+}
+
+const excludeHiddenProducts = (products: ProductResponse[], spotId: string): ProductResponse[] => {
+  return products.filter((product: ProductResponse) => {
+    const spot = product.spots.find((spot: Spot) => {
+      return spot.spot_id === spotId
+    });
+
+    if (spot && Number(spot.visible)) {
+      return product;
+    }
+
+  })
 }
 
 const convertProduct = (product: ProductResponse): Product => {;
@@ -61,7 +74,9 @@ class Poster {
       category_id: id
     }
     const response = await axios.get(`${apiUrl}menu.getProducts`, {params});
-    return response.data.response.map(convertProduct);
+    const filteredProducts = excludeHiddenProducts(response.data.response, '1');
+
+    return filteredProducts.map(convertProduct);
   }
 
   async getProductById(id: string): Promise<Product> {

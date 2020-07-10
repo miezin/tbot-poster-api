@@ -19,6 +19,12 @@ import {cartCtrl, cartResetCtrl, cartEdit, cartEditProduct, cartReduceProductQua
 import superWizard, { submitOrder, cancelOrder } from './controllers/checkout';
 import { createMainKeyboard } from "./keyboards/main";
 import { updateUserActivity } from './middlewares/update-user-activity';
+import { isUserBanned } from './middlewares/ban-checker';
+import { asyncWrapper } from './util/error-handler';
+import logger from './util/logger';
+import { MainKeyboard } from './config/texts';
+import { contactsCtrl } from './controllers/contacts';
+import { startCtrl } from './controllers/start';
 
 // TODO
 // 1. add error handling middlewares
@@ -52,43 +58,55 @@ mongoose.connection.on('open', () => {
   bot.use(session());
   bot.use(sessionSaver(mongoose));
   bot.use(updateUserActivity);
+  bot.use(isUserBanned);
   bot.use(stage.middleware());
 
-  bot.start((ctx: ContextMessageUpdate) => {
-    ctx.reply('Чем могу быть полезен', Extra.markup(createMainKeyboard()));
-  });
+  bot.start(asyncWrapper(startCtrl));
 
-  bot.hears('Меню', (ctx: SceneContextMessageUpdate) => {
+  bot.hears(MainKeyboard.contacts, contactsCtrl);
+
+  bot.hears(MainKeyboard.menu, asyncWrapper((ctx: SceneContextMessageUpdate) => {
     ctx.scene.enter('menu');
-  });
+  }));
 
   // category entry action
-  bot.action(/catId/gi, (ctx: SceneContextMessageUpdate) => ctx.scene.enter('products'));
+  bot.action(/catId/gi, asyncWrapper((ctx: SceneContextMessageUpdate) => ctx.scene.enter('products')));
 
   // cart actions
-  bot.action('cart', cartCtrl);
-  bot.action('reset', cartResetCtrl);
-  bot.action('edit', cartEdit);
-  bot.action('backFromEdit', cartCtrl);
-  bot.action('backFromPrEdit', cartEdit);
-  bot.action(/prIdToEdit/g, cartEditProduct);
-  bot.action(/cartReducePr/g, cartReduceProductQuantity);
-  bot.action(/cartIncreacePr/g, cartIncraseProductQuantity);
-  bot.action(/cartDeletePr/g, cartDeleteProduct);
+  bot.action('cart', asyncWrapper(cartCtrl));
+  bot.action('reset', asyncWrapper(cartResetCtrl));
+  bot.action('edit', asyncWrapper(cartEdit));
+  bot.action('backFromEdit', asyncWrapper(cartCtrl));
+  bot.action('backFromPrEdit', asyncWrapper(cartEdit));
+  bot.action(/prIdToEdit/g, asyncWrapper(cartEditProduct));
+  bot.action(/cartReducePr/g, asyncWrapper(cartReduceProductQuantity));
+  bot.action(/cartIncreacePr/g, asyncWrapper(cartIncraseProductQuantity));
+  bot.action(/cartDeletePr/g, asyncWrapper(cartDeleteProduct));
   bot.action('close', (ctx: SceneContextMessageUpdate) => {
     ctx.deleteMessage();
   });
 
   // checkout actions
-  bot.action('checkout', (ctx: SceneContextMessageUpdate) => {
+  bot.action('checkout', asyncWrapper((ctx: SceneContextMessageUpdate) => {
     ctx.scene.enter('checkout');
-  })
-  bot.action(/orderSubmit/g, submitOrder)
-  bot.action(/orderCancel/g, cancelOrder)
+  }));
+  bot.action(/orderSubmit/g, asyncWrapper(submitOrder))
+  bot.action(/orderCancel/g, asyncWrapper(cancelOrder))
 
-  bot.hears('Корзина', cartCtrl);
+  bot.hears(MainKeyboard.cart, asyncWrapper(cartCtrl));
 
-  bot.startPolling();
+  bot.catch((error: any) => {
+    logger.error(undefined, 'Global error has happened, %O', error);
+  });
+
+  // bot.startPolling();
+
+  bot.launch({
+    webhook: {
+      domain: 'https://bot.gmzn.icu',
+      port: 3000
+    }
+  });
 });
 
 const telegram = new Telegram(TELEGRAM_TOKEN, {});

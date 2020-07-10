@@ -16,5 +16,4 @@ export interface CategoryResponse {
   right: string;
   level: string;
   category_tag: null;
-  visible: [];
 }
