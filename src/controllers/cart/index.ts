@@ -18,11 +18,11 @@ export const cartCtrl = async (ctx: SceneContextMessageUpdate): Promise<void> =>
   const keyboard = createCartKeyboard(products, total, quantity);
 
   if (!products.length && ctx.callbackQuery) {
-    ctx.answerCbQuery(Notifier.emptyCart);
+    await ctx.answerCbQuery(Notifier.emptyCart);
   } else if (ctx.callbackQuery?.data === 'backFromEdit') {
-    ctx.editMessageText(await generateCartList(cart), Extra.HTML().markup(keyboard));
+    await ctx.editMessageText(await generateCartList(cart), Extra.HTML().markup(keyboard));
   } else {
-    ctx.replyWithMarkdown(await generateCartList(cart), Extra.HTML().markup(keyboard));
+    await ctx.replyWithMarkdown(await generateCartList(cart), Extra.HTML().markup(keyboard));
   }
 };
 
@@ -32,9 +32,9 @@ export const cartResetCtrl = async (ctx: SceneContextMessageUpdate): Promise<voi
 
   cart.reset();
   await cart.save();
-  ctx.deleteMessage();
-  ctx.answerCbQuery(Notifier.clearedCart);
-  ctx.scene.enter('menu');
+  await ctx.deleteMessage();
+  await ctx.answerCbQuery(Notifier.clearedCart);
+  await ctx.scene.enter('menu');
 };
 
 export const cartEdit = async (ctx: SceneContextMessageUpdate): Promise<void> => {
@@ -43,7 +43,7 @@ export const cartEdit = async (ctx: SceneContextMessageUpdate): Promise<void> =>
   const cartProducts = cart ? await cart.getGroupedProducts() : [];
   const keyboard = createSelectToEditKeyboard(cartProducts);
 
-  ctx.editMessageText(await generateCartList(cart), Extra.HTML().markup(keyboard));
+  await ctx.editMessageText(await generateCartList(cart), Extra.HTML().markup(keyboard));
 }
 
 export const cartEditProduct = async (ctx: SceneContextMessageUpdate): Promise<void> => {
@@ -54,7 +54,7 @@ export const cartEditProduct = async (ctx: SceneContextMessageUpdate): Promise<v
   const productToEdit = products.find(({id}) => id === prIdToEdit);
   const keyboard = createEditCartKeyBoard(productToEdit);
 
-  ctx.editMessageText(await generateCartList(cart), Extra.HTML().markup(keyboard));
+  await ctx.editMessageText(await generateCartList(cart), Extra.HTML().markup(keyboard));
 }
 
 export const editProductQuantity = async (ctx: SceneContextMessageUpdate, productId: string, action: 'add' | 'delete') => {
@@ -73,9 +73,9 @@ export const editProductQuantity = async (ctx: SceneContextMessageUpdate, produc
   const balance = await cart.getQuantityById(productId);
 
   if (!products.length) {
-    ctx.deleteMessage();
-    ctx.answerCbQuery(Notifier.clearedCart);
-    ctx.scene.enter('menu');
+    await ctx.deleteMessage();
+    await ctx.answerCbQuery(Notifier.clearedCart);
+    await ctx.scene.enter('menu');
     return;
   }
 
@@ -88,14 +88,14 @@ export const editProductQuantity = async (ctx: SceneContextMessageUpdate, produc
   cartEditProduct(ctx);
 }
 
-export const cartReduceProductQuantity = (ctx: SceneContextMessageUpdate): void  => {
+export const cartReduceProductQuantity = async (ctx: SceneContextMessageUpdate): void  => {
   const { cartReducePr } = JSON.parse(ctx.callbackQuery.data);
-  editProductQuantity(ctx, cartReducePr, 'delete');
+  await editProductQuantity(ctx, cartReducePr, 'delete');
 }
 
-export const cartIncraseProductQuantity = (ctx: SceneContextMessageUpdate): void  => {
+export const cartIncraseProductQuantity = async (ctx: SceneContextMessageUpdate): void  => {
   const { cartIncreacePr } = JSON.parse(ctx.callbackQuery.data);
-  editProductQuantity(ctx, cartIncreacePr, 'add');
+  await editProductQuantity(ctx, cartIncreacePr, 'add');
 }
 
 export const cartDeleteProduct = async (ctx: SceneContextMessageUpdate): Promise<void> => {
@@ -107,12 +107,12 @@ export const cartDeleteProduct = async (ctx: SceneContextMessageUpdate): Promise
   const products = cart ? await cart.getGroupedProducts() : [];
 
   if (!products.length) {
-    ctx.deleteMessage();
-    ctx.answerCbQuery(Notifier.clearedCart);
-    ctx.scene.enter('menu');
+    await ctx.deleteMessage();
+    await ctx.answerCbQuery(Notifier.clearedCart);
+    await ctx.scene.enter('menu');
     return;
   }
 
   const keyboard = createSelectToEditKeyboard(products);
-  ctx.editMessageText(await generateCartList(cart), Extra.HTML().markup(keyboard));
+  await ctx.editMessageText(await generateCartList(cart), Extra.HTML().markup(keyboard));
 }

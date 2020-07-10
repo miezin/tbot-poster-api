@@ -41,9 +41,9 @@ const generateSubmitBottomText = (orderClientData: OrderClientData): string => {
 </b>`;
 }
 
-const backToMenuCtrl = (ctx: ContextMessageUpdate) => {
-  ctx.reply(CheckoutUi.checkoutCancel, Extra.markup(createMainKeyboard()))
-  ctx.scene.enter('menu');
+const backToMenuCtrl = async (ctx: ContextMessageUpdate) => {
+  await ctx.reply(CheckoutUi.checkoutCancel, Extra.markup(createMainKeyboard()))
+  await ctx.scene.enter('menu');
 }
 
 const askContactStepCtrl = async (ctx: ContextMessageUpdate) => {
@@ -51,11 +51,11 @@ const askContactStepCtrl = async (ctx: ContextMessageUpdate) => {
   const user = await User.findOne({userId: uid});
 
   if (user && !user.phone) {
-    ctx.reply(CheckoutUi.contactStep, Extra.markup(createCheckoutKeyboard()));
-    ctx.wizard.next();
+    await ctx.reply(CheckoutUi.contactStep, Extra.markup(createCheckoutKeyboard()));
+    await ctx.wizard.next();
   } else {
-    ctx.reply(CheckoutUi.commentStep);
-    ctx.wizard.selectStep(2);
+    await ctx.reply(CheckoutUi.commentStep);
+    await ctx.wizard.selectStep(2);
   }
 }
 
@@ -73,7 +73,7 @@ const phoneStepCtrl = async (ctx: ContextMessageUpdate) => {
   user.phone = phoneNumber;
   await user.save();
 
-  ctx.reply(`${CheckoutUi.phoneAdded}. ${CheckoutUi.commentStep}`, Extra.markup(Markup.keyboard([CheckoutKeyboard.back])
+  await ctx.reply(`${CheckoutUi.phoneAdded}. ${CheckoutUi.commentStep}`, Extra.markup(Markup.keyboard([CheckoutKeyboard.back])
     .resize()
   ));
   return ctx.wizard.next();
@@ -93,7 +93,7 @@ const commentStepCtrl = async (ctx: ContextMessageUpdate) => {
   });
   await order.save();
 
-  ctx.scene.leave();
+  await ctx.scene.leave();
   const submitText = generateSubmitBottomText(
     {
       phoneNumber: user.phone,
@@ -142,8 +142,8 @@ export const submitOrder = async (ctx: ContextMessageUpdate) => {
 export const cancelOrder = async (ctx: ContextMessageUpdate) => {
   const { orderCancel } = JSON.parse(ctx.callbackQuery.data);
   const order = await Order.findOneAndDelete({_id: orderCancel});
-  ctx.editMessageText(CheckoutUi.orderCancaled);
-  ctx.answerCbQuery(Notifier.orderDeleted);
+  await ctx.editMessageText(CheckoutUi.orderCancaled);
+  await ctx.answerCbQuery(Notifier.orderDeleted);
 }
 
 const contactStepHandler = new Composer();

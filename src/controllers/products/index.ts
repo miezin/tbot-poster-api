@@ -11,6 +11,7 @@ import { emojiMap } from '../../config/emojiMap';
 import Cart from '../../models/Cart';
 import { createProductsKeyboard } from '../../keyboards/products';
 import { Notifier } from "../../config/notification";
+import { asyncWrapper } from '../../util/error-handler';
 
 const addToCart = async (ctx: ContextMessageUpdate) => {
   const { addPrId } = JSON.parse(ctx.match.input);
@@ -38,8 +39,8 @@ const addToCart = async (ctx: ContextMessageUpdate) => {
   }
 
   const keyboard = createProductsKeyboard(products, cart);
-  ctx.editMessageReplyMarkup(keyboard);
-  ctx.answerCbQuery(`✅ ${product.productName} ${Notifier.addedToCart} ✅`);
+  await ctx.editMessageReplyMarkup(keyboard);
+  await ctx.answerCbQuery(`✅ ${product.productName} ${Notifier.addedToCart} ✅`);
 }
 
 const products = new BaseScene('products');
@@ -55,17 +56,17 @@ products.enter(async (ctx: SceneContextMessageUpdate) => {
   const keyboard = createProductsKeyboard(products, cart);
 
   ctx.scene.state = { catId, products };
-  ctx.editMessageText(`${emoji || ''}  ${categoryName}`, Extra.markup(keyboard));
+  await ctx.editMessageText(`${emoji || ''}  ${categoryName}`, Extra.markup(keyboard));
 });
 
 products.leave(async (ctx: SceneContextMessageUpdate) => {
   ctx.scene.reset();
 });
 
-products.action(/addPrId/gi, addToCart);
+products.action(/addPrId/gi, asyncWrapper(addToCart));
 
-products.action('back', (ctx: SceneContextMessageUpdate) => {
-  ctx.scene.enter('menu', { reference: 'products' });
-});
+products.action('back', asyncWrapper(async(ctx: SceneContextMessageUpdate) => {
+  await ctx.scene.enter('menu', { reference: 'products' });
+}));
 
 export default products;

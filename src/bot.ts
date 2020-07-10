@@ -63,10 +63,10 @@ mongoose.connection.on('open', () => {
 
   bot.start(asyncWrapper(startCtrl));
 
-  bot.hears(MainKeyboard.contacts, contactsCtrl);
+  bot.hears(MainKeyboard.contacts, asyncWrapper(contactsCtrl));
 
-  bot.hears(MainKeyboard.menu, asyncWrapper((ctx: SceneContextMessageUpdate) => {
-    ctx.scene.enter('menu');
+  bot.hears(MainKeyboard.menu, asyncWrapper(async (ctx: SceneContextMessageUpdate) => {
+    await ctx.scene.enter('menu');
   }));
 
   // category entry action
