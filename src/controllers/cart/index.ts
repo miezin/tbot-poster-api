@@ -80,12 +80,12 @@ export const editProductQuantity = async (ctx: SceneContextMessageUpdate, produc
   }
 
   if (balance === 0) {
-    cartEdit(ctx);
+    await cartEdit(ctx);
     return;
   }
 
   ctx.callbackQuery.data = JSON.stringify({prIdToEdit: productId});
-  cartEditProduct(ctx);
+  await cartEditProduct(ctx);
 }
 
 export const cartReduceProductQuantity = async (ctx: SceneContextMessageUpdate): Promise<void>  => {
