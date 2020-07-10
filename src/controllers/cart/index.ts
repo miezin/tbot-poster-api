@@ -88,12 +88,12 @@ export const editProductQuantity = async (ctx: SceneContextMessageUpdate, produc
   cartEditProduct(ctx);
 }
 
-export const cartReduceProductQuantity = async (ctx: SceneContextMessageUpdate): void  => {
+export const cartReduceProductQuantity = async (ctx: SceneContextMessageUpdate): Promise<void>  => {
   const { cartReducePr } = JSON.parse(ctx.callbackQuery.data);
   await editProductQuantity(ctx, cartReducePr, 'delete');
 }
 
-export const cartIncraseProductQuantity = async (ctx: SceneContextMessageUpdate): void  => {
+export const cartIncraseProductQuantity = async (ctx: SceneContextMessageUpdate): Promise<void>  => {
   const { cartIncreacePr } = JSON.parse(ctx.callbackQuery.data);
   await editProductQuantity(ctx, cartIncreacePr, 'add');
 }
