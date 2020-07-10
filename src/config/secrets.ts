@@ -1,5 +1,5 @@
 
-import logger from '../util/logger';
+import { logger }  from '../util/logger';
 import dotenv from 'dotenv';
 import fs from 'fs';
 
