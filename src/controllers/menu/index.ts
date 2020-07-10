@@ -21,9 +21,9 @@ menu.enter(async (ctx: SceneContextMessageUpdate) => {
   const keyboard = createCategoriesKeyboard(categories, cartTotal);
 
   if (reference) {
-    ctx.editMessageText('Выберите категорию 👇', Extra.markup(keyboard));
+    await ctx.editMessageText('Выберите категорию 👇', Extra.markup(keyboard));
   } else {
-    ctx.reply('Выберите категорию 👇', Extra.markup(keyboard));
+    await ctx.reply('Выберите категорию 👇', Extra.markup(keyboard));
   }
 
 });
