@@ -1,42 +1,29 @@
-  services:
-    mongodb:
-      image: mongo:4.1.8-xenial
-      container_name: mongodb
-      restart: unless-stopped
-      env_file: .env
-      environment:
-        - MONGO_INITDB_ROOT_USERNAME=$MONGO_USERNAME
-        - MONGO_INITDB_ROOT_PASSWORD=$MONGO_PASSWORD
-      ports:
-        - "27017:27017"
-      volumes:
-        - dbdata:/data/db
+version: "3"
 
-    nodejs:
-      image: nodejs
-      container_name: nodejs
-      restart: unless-stopped
-      build: .
-      env_file: .env
-      environment:
-        - MONGO_USERNAME=$MONGO_USERNAME
-        - MONGO_PASSWORD=$MONGO_PASSWORD
-        - MONGO_HOSTNAME=mongodb
-        - MONGO_PORT=$MONGO_PORT
-        - MONGO_DB=$MONGO_DB
-        - VIRTUAL_HOST=$NODE_HOST
-        - LETSENCRYPT_HOST=$NODE_HOST
-        - LETSENCRYPT_EMAIL=$LETSENCRYPT_EMAIL
-        - VIRTUAL_PORT=$NODE_PORT
-        - TELEGRAM_TOKEN=$TELEGRAM_TOKEN
-        - POSTER_TOKEN=$POSTER_TOKEN
-      ports:
-        - "3000:3000"
-
-  networks:
-    default:
-      external:
-        name: ter-amo
-
-  volumes:
-    dbdata:
+services:
+    postgres_triple:
+        container_name: postgres_triple
+        image: postgres:9.5
+        volumes:
+            - pgdata_triple:/var/lib/postgresql/data
+        environment:
+            - POSTGRES_PASSWORD=postgres
+    postgres:
+        container_name: postgres
+        image: postgres:9.5
+        volumes:
+            - pgdata:/var/lib/postgresql/data
+        environment:
+            - POSTGRES_PASSWORD=postgres
+    collectiwise:
+        container_name: collectiwise
+        build: .
+        image: collectiwise/main
+        ports:
+            - "8090:80"
+        environment:
+            - DB_HOST=postgres
+            - COLLECTIWISE_BRANCH=${BRANCH}
+volumes:
+    pgdata:
+    pgdata_triple:
