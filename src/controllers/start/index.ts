@@ -9,5 +9,5 @@ export const startCtrl = async (ctx: SceneContextMessageUpdate): Promise<void> =
   const photo = await fs.readFile('./src/assets/logo_avatar.png');
   await ctx.replyWithPhoto({source: photo});
   await ctx.replyWithHTML(GeneralTexts.start, Extra.markup(createMainKeyboard()));
-  ctx.scene.enter('menu');
+  await ctx.scene.enter('menu');
 }
