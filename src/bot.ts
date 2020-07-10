@@ -82,13 +82,13 @@ mongoose.connection.on('open', () => {
   bot.action(/cartReducePr/g, asyncWrapper(cartReduceProductQuantity));
   bot.action(/cartIncreacePr/g, asyncWrapper(cartIncraseProductQuantity));
   bot.action(/cartDeletePr/g, asyncWrapper(cartDeleteProduct));
-  bot.action('close', (ctx: SceneContextMessageUpdate) => {
-    ctx.deleteMessage();
-  });
+  bot.action('close', asyncWrapper(async (ctx: SceneContextMessageUpdate) => {
+    await ctx.deleteMessage();
+  }));
 
   // checkout actions
-  bot.action('checkout', asyncWrapper((ctx: SceneContextMessageUpdate) => {
-    ctx.scene.enter('checkout');
+  bot.action('checkout', asyncWrapper(async (ctx: SceneContextMessageUpdate) => {
+    await ctx.scene.enter('checkout');
   }));
   bot.action(/orderSubmit/g, asyncWrapper(submitOrder))
   bot.action(/orderCancel/g, asyncWrapper(cancelOrder))
