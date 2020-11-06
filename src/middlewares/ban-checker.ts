@@ -5,7 +5,7 @@ import { Notifier } from '../config/notification';
 
 export const isUserBanned = async (ctx: ContextMessageUpdate, next: HookNextFunction) => {
   const { id: userId } = ctx.from;
-  const user = await User.findOne({userId: String(userId)});
+  const user = await User.findOne({ userId: String(userId) });
 
   if (user && user.isBanned) {
     return ctx.reply(Notifier.bann);

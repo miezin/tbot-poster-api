@@ -1,6 +1,5 @@
-import { Mongoose } from "mongoose";
-import { ContextMessageUpdate } from "telegraf-context";
-import User from "../models/User";
+import { Mongoose } from 'mongoose';
+import { ContextMessageUpdate } from 'telegraf-context';
 
 export const sessionSaver = (mongoose: Mongoose) => {
   return async (ctx: ContextMessageUpdate, next: () => Promise<void>) => {
@@ -14,6 +13,7 @@ export const sessionSaver = (mongoose: Mongoose) => {
       }
     }
 
+    // eslint-disable-next-line callback-return
     await next();
     await sessions.updateOne(
       {
@@ -27,6 +27,6 @@ export const sessionSaver = (mongoose: Mongoose) => {
         }
       },
       { upsert: true }
-      );
-  }
-}
+    );
+  };
+};

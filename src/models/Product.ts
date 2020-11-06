@@ -1,5 +1,4 @@
 import mongoose, { Document } from 'mongoose';
-import { emojiMap } from '../config/emojiMap';
 
 export interface Ingredient {
   ingredientId: string;
@@ -7,8 +6,8 @@ export interface Ingredient {
   ingredientName: string;
 }
 
-export interface Product {
-  categoryName: keyof typeof emojiMap;
+export interface ProductInterface {
+  categoryName: string;
   isHidden: boolean;
   categoryId: string;
   photo: string;
@@ -37,7 +36,7 @@ export const ProductSchema = new mongoose.Schema({
   }]
 }, { _id: false });
 
-export interface ProductSchemaModel extends Product, Document {}
+export interface ProductSchemaModel extends ProductInterface, Document {}
 
 const product = mongoose.model<ProductSchemaModel>('Product', ProductSchema);
 

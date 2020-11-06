@@ -1,9 +1,8 @@
 import mongoose, { Document } from 'mongoose';
-import { emojiMap } from '../config/emojiMap';
 
-export interface Category {
+export interface CategoryInterface {
   categoryId: string;
-  categoryName: keyof typeof emojiMap;
+  categoryName: string;
   photo: string;
   photoOrigin: string;
   isHidden: boolean;
@@ -16,9 +15,9 @@ export const CategorySchema = new mongoose.Schema({
   photo: String,
   photoOrigin: String,
   isHidden: Boolean
-}, { _id: false })
+}, { _id: false });
 
-export interface CategorySchemaModel extends Category, Document {}
+export interface CategorySchemaModel extends CategoryInterface, Document {}
 
 const category = mongoose.model<CategorySchemaModel>('Category', CategorySchema);
 

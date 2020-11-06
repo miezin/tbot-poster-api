@@ -1,18 +1,16 @@
-import { Markup } from "telegraf";
-import { createCartButton } from "./cart";
-import { Category } from "../models/Category";
-import { emojiMap } from "../config/emojiMap";
-import { InlineKeyboardMarkup } from "telegraf/typings/telegram-types";
+import { Markup } from 'telegraf';
+import { createCartButton } from './cart';
+import { CategoryInterface } from '../models/Category';
+import { InlineKeyboardMarkup } from 'telegraf/typings/telegram-types';
 
-export const createCategoriesKeyboard = (categories: Category[], cartTotal?: number): Markup & InlineKeyboardMarkup => {
-  const keyboard = categories.map((category: Category) => {
+export const createCategoriesKeyboard = (categories: CategoryInterface[], cartTotal?: number): Markup & InlineKeyboardMarkup => {
+  const keyboard = categories.map((category: CategoryInterface) => {
     const { categoryName, categoryId } = category;
-    const emoji = emojiMap[categoryName];
-    return [Markup.callbackButton(`${emoji || ''}  ${categoryName}`, JSON.stringify({ catId: categoryId }))];
+    return [Markup.callbackButton(categoryName, JSON.stringify({ catId: categoryId }))];
   });
   keyboard.push([
-    createCartButton(cartTotal, 'cart'),
-  ])
+    createCartButton(cartTotal, 'cart')
+  ]);
 
   return Markup.inlineKeyboard(keyboard, {});
-}
+};

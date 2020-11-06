@@ -21,6 +21,7 @@ const dbName = process.env.MONGO_DB;
 export const ENVIRONMENT = process.env.NODE_ENV;
 export const TELEGRAM_TOKEN = process.env.TELEGRAM_TOKEN;
 export const WEBHOOK_PORT = process.env.WEBHOOK_PORT;
+export const WEBHOOK_DOMAIN = process.env.NODE_HOST;
 export const ADMIN_ID = process.env.ADMIN_ID;
 export const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
 export const POSTER_TOKEN = process.env.POSTER_TOKEN;

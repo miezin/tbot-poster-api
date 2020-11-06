@@ -1,5 +1,3 @@
-import {emojiMap} from "../config/emojiMap";
-
 export interface Price {
   [key: string]: string;
 }
@@ -39,11 +37,11 @@ export interface IngredientResponse {
   ingredients_losses_fry: string;
   ingredients_losses_stew: string;
   ingredients_losses_bake: string;
-};
+}
 
 export interface ProductResponse {
   barcode: string;
-  category_name:  keyof typeof emojiMap;
+  category_name: string;
   unit: string;
   cost: string;
   cost_netto: string;

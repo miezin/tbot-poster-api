@@ -1,7 +1,7 @@
 import mongoose, { Document } from 'mongoose';
 import { CartResultProduct } from './Cart';
 
-export interface Order extends Document {
+export interface OrderInterface extends Document {
   userId: string;
   status: string;
   firstName: string;
@@ -29,8 +29,8 @@ export const OrderSchema = new mongoose.Schema({
     id: String
   }]
 }, {
-    timestamps: {
-      createdAt: 'createdAt', updatedAt: 'updatedAt' } })
+  timestamps: {
+    createdAt: 'createdAt', updatedAt: 'updatedAt' } });
 
-const user = mongoose.model<Order>('Order', OrderSchema);
+const user = mongoose.model<OrderInterface>('Order', OrderSchema);
 export default user;

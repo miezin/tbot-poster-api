@@ -1,69 +1,64 @@
-import mongoose, {Document, Schema} from 'mongoose';
-import {Product, ProductSchema} from './Product';
-import {emojiMap} from "../config/emojiMap";
-
-// TODO rewrite cart model to grouped
-// For example: the method of adding should find the product and add the quantity
-// so far it is just pushing the product to the list without grouping
+import mongoose, { Document } from 'mongoose';
+import { ProductInterface, ProductSchema } from './Product';
 
 const groupByNameQuery = {
   $group: {
-    _id: "$products.productName",
-    amount: {$sum: 1},
-    category: {$first: "$products.categoryName"},
-    price: {$first: "$products.price"},
-    total: {$sum: "$products.price"},
-    id: {$first: "$products.productId"}
+    _id: '$products.productName',
+    amount: { $sum: 1 },
+    category: { $first: '$products.categoryName' },
+    price: { $first: '$products.price' },
+    total: { $sum: '$products.price' },
+    id: { $first: '$products.productId' }
   }
 };
 
 const groupByCategoryQuery = {
   $group: {
-    _id: "$category",
+    _id: '$category',
     products: {
-      $push: {name: "$_id", amount: "$amount", price: "$price", total: "$total"}
+      $push: { name: '$_id', amount: '$amount', price: '$price', total: '$total' }
     }
   }
 };
 
 const replaceIdQueryForCategory = {
   $project: {
-    category: "$_id",
-    products: "$products",
+    category: '$_id',
+    products: '$products',
     _id: false
   }
 };
 
 const replaceIdQueryForProduct = {
   $project: {
-    name: "$_id",
-    category: "$category",
-    price: "$price",
-    total: "$total",
-    amount: "$amount",
-    id: "$id",
+    name: '$_id',
+    category: '$category',
+    price: '$price',
+    total: '$total',
+    amount: '$amount',
+    id: '$id',
     _id: false
   }
 };
 
 export interface CartResultProduct {
-  name: String;
-  price: Number;
-  total: Number;
-  amount: Number;
-  id: String;
+  name: string;
+  price: number;
+  total: number;
+  amount: number;
+  id: string;
 }
 
 export interface CartResultCategory {
-  category: keyof typeof emojiMap,
+  category: string,
   products: CartResultProduct[]
 }
 
-export interface Cart extends Document {
+export interface CartInterface extends Document {
   _id: string;
-  products: Product[];
+  products: ProductInterface[];
 
-  addProduct: (product: Product) => void;
+  addProduct: (product: ProductInterface) => void;
   getQuantity: () => number;
   getQuantityById: (id: string) => number;
   getTotal: () => number;
@@ -77,73 +72,73 @@ export interface Cart extends Document {
 
 export const CartSchema = new mongoose.Schema({
   _id: String,
-  products: [ProductSchema],
-}, {_id: false});
+  products: [ProductSchema]
+}, { _id: false });
 
-CartSchema.methods.addProduct = function (product: Product): void {
+CartSchema.methods.addProduct = function (product: ProductInterface): void {
   this.products.push(product);
-}
+};
 
 CartSchema.methods.getGroupedProductsByCategory = async function (): Promise<CartResultCategory[]> {
   const groupedProducts = await mongoose.model('Cart').aggregate([
-    {$match: {_id: this._id}},
-    {$unwind: "$products"},
+    { $match: { _id: this._id } },
+    { $unwind: '$products' },
     groupByNameQuery,
-    {$sort: { _id: 1}},
+    { $sort: { _id: 1 } },
     groupByCategoryQuery,
-    {$sort: { _id: 1}},
+    { $sort: { _id: 1 } },
     replaceIdQueryForCategory
   ]);
 
   return groupedProducts;
-}
+};
 
 CartSchema.methods.getGroupedProducts = async function (): Promise<CartResultProduct[]> {
   const groupedProducts = await mongoose.model('Cart').aggregate([
-    {$match: {_id: this._id}},
-    {$unwind: "$products"},
+    { $match: { _id: this._id } },
+    { $unwind: '$products' },
     groupByNameQuery,
-    {$sort: { _id: 1, category: 1 }},
+    { $sort: { _id: 1, category: 1 } },
     replaceIdQueryForProduct
-  ])
+  ]);
 
   return groupedProducts;
-}
+};
 
 CartSchema.methods.getQuantity = function (): number {
   return this.products.length;
-}
+};
 
 CartSchema.methods.getTotal = function (): number {
-  return this.products.reduce((acc: number, prb: Product) => {
+  return this.products.reduce((acc: number, prb: ProductInterface) => {
     return acc + prb.price;
   }, 0);
-}
+};
 
 CartSchema.methods.getQuantityById = function (id: string): number {
-  const products = this.products.filter(({ productId }: Product) => (productId === id));
+  const products = this.products.filter(({ productId }: ProductInterface) => (productId === id));
   return products.length;
-}
+};
 
-CartSchema.methods.deleteById = function(id: string): void {
-  const idx = this.products.findIndex(({ productId }: Product) => productId === id);
+CartSchema.methods.deleteById = function (id: string): void {
+  const idx = this.products.findIndex(({ productId }: ProductInterface) => productId === id);
   this.products.splice(idx, 1);
-}
+};
 
-CartSchema.methods.deleteAllById = function(id: string): void {
-  const editedProducts = this.products.filter(({ productId }: Product) => productId !== id);
+CartSchema.methods.deleteAllById = function (id: string): void {
+  const editedProducts = this.products.filter(({ productId }: ProductInterface) => productId !== id);
   this.products = editedProducts;
-}
+};
 
-CartSchema.methods.addOneMoreProduct = function(id: string): void {
-  const product = this.products.find(({ productId }: Product) => productId === id);
+CartSchema.methods.addOneMoreProduct = function (id: string): void {
+  const product = this.products.find(({ productId }: ProductInterface) => productId === id);
   this.addProduct(product);
-}
+};
 
 
 CartSchema.methods.reset = function (): void {
   this.products = [];
-}
+};
 
-const Cart = mongoose.model<Cart>('Cart', CartSchema);
+const Cart = mongoose.model<CartInterface>('Cart', CartSchema);
 export default Cart;
