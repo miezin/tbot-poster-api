@@ -1,12 +1,7 @@
-import {
-  Extra,
-} from 'telegraf';
-
-
 import { SceneContextMessageUpdate } from 'telegraf/typings/stage';
-import { GeneralTexts } from '../../config/texts';
+import { GeneralTexts, Geo } from '../../config/enums';
 
 export const contactsCtrl = async (ctx: SceneContextMessageUpdate): Promise<void> => {
   await ctx.replyWithHTML(GeneralTexts.contacts);
-  await ctx.replyWithLocation(48.525781, 35.016239);
-}
+  await ctx.replyWithLocation(Geo.lat, Geo.lon);
+};

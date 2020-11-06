@@ -21,3 +21,4 @@ debug.log
 yarn.lock
 dump
 dist.zips
+src/assets

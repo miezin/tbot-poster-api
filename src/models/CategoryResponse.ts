@@ -1,8 +1,6 @@
-import { emojiMap } from "../config/emojiMap";
-
 export interface CategoryResponse {
   category_id: string;
-  category_name: keyof typeof emojiMap;
+  category_name: string;
   category_photo: string;
   category_photo_origin: string;
   parent_category: string;

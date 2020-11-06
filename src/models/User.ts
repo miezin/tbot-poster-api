@@ -1,6 +1,6 @@
 import mongoose, { Document } from 'mongoose';
 
-export interface User extends Document {
+export interface UserInterface extends Document {
   userId: string;
   chatId: string;
   createdAt: Date;
@@ -23,11 +23,11 @@ export const UserSchema = new mongoose.Schema({
   phone: String,
   lastActivity: Date,
   language: String,
-  isBanned: {type: Boolean, default: false}
+  isBanned: { type: Boolean, default: false }
 }, {
-    _id: false,
-    timestamps: {
-      createdAt: 'createdAt', updatedAt: 'lastActivity' } })
+  _id: false,
+  timestamps: {
+    createdAt: 'createdAt', updatedAt: 'lastActivity' } });
 
-const user = mongoose.model<User>('User', UserSchema);
+const user = mongoose.model<UserInterface>('User', UserSchema);
 export default user;

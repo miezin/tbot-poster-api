@@ -1,10 +1,10 @@
 import axios from 'axios';
-import {POSTER_TOKEN} from '../config/secrets';
-import product, {Ingredient, Product} from '../models/Product';
-import {Category} from '../models/Category';
-import {IngredientResponse, ProductResponse, Spot} from "../models/ProductResponse";
-import {CategoryResponse} from "../models/CategoryResponse";
-import { Order } from '../models/Order';
+import { POSTER_TOKEN } from '../config/secrets';
+import { Ingredient, ProductInterface } from '../models/Product';
+import { CategoryInterface } from '../models/Category';
+import { IngredientResponse, ProductResponse, Spot } from '../models/ProductResponse';
+import { CategoryResponse } from '../models/CategoryResponse';
+import { OrderInterface } from '../models/Order';
 
 const apiUrl = 'https://joinposter.com/api/';
 
@@ -12,11 +12,11 @@ const convertIngredient = (ingredient: IngredientResponse): Ingredient => {
   return {
     ingredientId: ingredient.ingredient_id,
     ingredientUnit: ingredient.ingredient_unit,
-    ingredientName: ingredient.ingredient_name,
-  }
-}
+    ingredientName: ingredient.ingredient_name
+  };
+};
 
-const convertCategory = (category: CategoryResponse): Category => {
+const convertCategory = (category: CategoryResponse): CategoryInterface => {
   return {
     categoryId: category.category_id,
     categoryName: category.category_name,
@@ -24,23 +24,22 @@ const convertCategory = (category: CategoryResponse): Category => {
     photoOrigin: category.category_photo_origin,
     parentCategory: category.parent_category,
     isHidden: !!Number(category.category_hidden)
-  }
-}
+  };
+};
 
 const excludeHiddenProducts = (products: ProductResponse[], spotId: string): ProductResponse[] => {
   return products.filter((product: ProductResponse) => {
-    const spot = product.spots.find((spot: Spot) => {
-      return spot.spot_id === spotId
+    const spot = product.spots.find((spotItem: Spot) => {
+      return spotItem.spot_id === spotId;
     });
 
     if (spot && Number(spot.visible)) {
       return product;
     }
+  });
+};
 
-  })
-}
-
-const convertProduct = (product: ProductResponse): Product => {;
+const convertProduct = (product: ProductResponse): ProductInterface => {
   return {
     categoryName: product.category_name,
     isHidden: !!Number(product.hidden),
@@ -52,40 +51,40 @@ const convertProduct = (product: ProductResponse): Product => {;
     productName: product.product_name,
     out: product.out,
     ingredients: (product.ingredients || []).map(convertIngredient)
-  }
-}
+  };
+};
 
 class Poster {
   constructor(private token: string) {
   }
 
-  async getCategories(): Promise<Category[]> {
+  async getCategories(): Promise<CategoryInterface[]> {
     const params = {
       token: this.token
-    }
-    const response = await axios.get(`${apiUrl}menu.getCategories`, {params});
+    };
+    const response = await axios.get(`${apiUrl}menu.getCategories`, { params });
 
     return response.data.response.map(convertCategory);
   }
 
-  async getProductsByCategoryId(id: string): Promise<Product[]> {
+  async getProductsByCategoryId(id: string): Promise<ProductInterface[]> {
     const params = {
       token: this.token,
       category_id: id
-    }
-    const response = await axios.get(`${apiUrl}menu.getProducts`, {params});
+    };
+    const response = await axios.get(`${apiUrl}menu.getProducts`, { params });
     const filteredProducts = excludeHiddenProducts(response.data.response, '1');
 
     return filteredProducts.map(convertProduct);
   }
 
-  async getProductById(id: string): Promise<Product> {
+  async getProductById(id: string): Promise<ProductInterface> {
     const params = {
       token: this.token,
       product_id: id
-    }
+    };
 
-    const response = await axios.get(`${apiUrl}menu.getProduct`, {params});
+    const response = await axios.get(`${apiUrl}menu.getProduct`, { params });
     const product = response.data.response;
 
     if (!product) {
@@ -100,27 +99,28 @@ class Poster {
     firstName,
     comment,
     products
-  }: Order ): Promise<any> { // TODO add incomingOrder response interface
+  }: OrderInterface): Promise<any> { // TODO add incomingOrder response interface
     const params = {
       token: this.token
-    }
+    };
 
     const payload = {
       spot_id: 1,
-      phone: phone,
+      phone,
       first_name: firstName,
-      comment: comment,
-      products: products.map(({id, amount}) => {
+      comment,
+      products: products.map(({ id, amount }) => {
         return {
           product_id: id,
           count: amount
-        }
+        };
       })
-    }
+    };
 
-    const response = await axios.post(`${apiUrl}incomingOrders.createIncomingOrder`, payload, {params});
+    // const response = await axios.post(`${apiUrl}incomingOrders.createIncomingOrder`, payload, { params });
 
-    return response.data.response;
+    // return response.data.response;
+    return { incoming_order_id: 1 };
   }
 }
 

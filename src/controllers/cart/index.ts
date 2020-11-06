@@ -4,14 +4,14 @@ import {
 import { SceneContextMessageUpdate } from 'telegraf/typings/stage';
 
 import Cart from '../../models/Cart';
-import { createCartKeyboard, createSelectToEditKeyboard, createEditCartKeyBoard} from '../../keyboards/cart';
-import { Notifier } from "../../config/notification";
-import { generateCartList } from "./helpers";
+import { createCartKeyboard, createSelectToEditKeyboard, createEditCartKeyBoard } from '../../keyboards/cart';
+import { Notifier } from '../../config/notification';
+import { generateCartList } from './helpers';
 
 
 export const cartCtrl = async (ctx: SceneContextMessageUpdate): Promise<void> => {
   const uid = String(ctx.from.id);
-  const cart = await Cart.findOne({_id: uid});
+  const cart = await Cart.findOne({ _id: uid });
   const products = cart ? cart.products : [];
   const total = cart ? cart.getTotal() : 0;
   const quantity = cart ? cart.getQuantity() : 0;
@@ -28,7 +28,7 @@ export const cartCtrl = async (ctx: SceneContextMessageUpdate): Promise<void> =>
 
 export const cartResetCtrl = async (ctx: SceneContextMessageUpdate): Promise<void>  => {
   const uid = String(ctx.from.id);
-  const cart = await Cart.findOne({_id: uid});
+  const cart = await Cart.findOne({ _id: uid });
 
   cart.reset();
   await cart.save();
@@ -39,27 +39,27 @@ export const cartResetCtrl = async (ctx: SceneContextMessageUpdate): Promise<voi
 
 export const cartEdit = async (ctx: SceneContextMessageUpdate): Promise<void> => {
   const uid = String(ctx.from.id);
-  const cart = await Cart.findOne({_id: uid});
+  const cart = await Cart.findOne({ _id: uid });
   const cartProducts = cart ? await cart.getGroupedProducts() : [];
   const keyboard = createSelectToEditKeyboard(cartProducts);
 
   await ctx.editMessageText(await generateCartList(cart), Extra.HTML().markup(keyboard));
-}
+};
 
 export const cartEditProduct = async (ctx: SceneContextMessageUpdate): Promise<void> => {
   const { prIdToEdit } = JSON.parse(ctx.callbackQuery.data);
   const uid = String(ctx.from.id);
-  const cart = await Cart.findOne({_id: uid});
+  const cart = await Cart.findOne({ _id: uid });
   const products = cart ? await cart.getGroupedProducts() : [];
-  const productToEdit = products.find(({id}) => id === prIdToEdit);
+  const productToEdit = products.find(({ id }) => id === prIdToEdit);
   const keyboard = createEditCartKeyBoard(productToEdit);
 
   await ctx.editMessageText(await generateCartList(cart), Extra.HTML().markup(keyboard));
-}
+};
 
 export const editProductQuantity = async (ctx: SceneContextMessageUpdate, productId: string, action: 'add' | 'delete') => {
   const uid = String(ctx.from.id);
-  const cart = await Cart.findOne({_id: uid});
+  const cart = await Cart.findOne({ _id: uid });
 
   if (action === 'add') {
     await cart.addOneMoreProduct(productId);
@@ -84,25 +84,25 @@ export const editProductQuantity = async (ctx: SceneContextMessageUpdate, produc
     return;
   }
 
-  ctx.callbackQuery.data = JSON.stringify({prIdToEdit: productId});
+  ctx.callbackQuery.data = JSON.stringify({ prIdToEdit: productId });
   await cartEditProduct(ctx);
-}
+};
 
 export const cartReduceProductQuantity = async (ctx: SceneContextMessageUpdate): Promise<void>  => {
   const { cartReducePr } = JSON.parse(ctx.callbackQuery.data);
   await editProductQuantity(ctx, cartReducePr, 'delete');
-}
+};
 
 export const cartIncraseProductQuantity = async (ctx: SceneContextMessageUpdate): Promise<void>  => {
   const { cartIncreacePr } = JSON.parse(ctx.callbackQuery.data);
   await editProductQuantity(ctx, cartIncreacePr, 'add');
-}
+};
 
 export const cartDeleteProduct = async (ctx: SceneContextMessageUpdate): Promise<void> => {
   const { cartDeletePr } = JSON.parse(ctx.callbackQuery.data);
   const uid = String(ctx.from.id);
-  const cart = await Cart.findOne({_id: uid});
-  await cart.deleteAllById(cartDeletePr);
+  const cart = await Cart.findOne({ _id: uid });
+  cart.deleteAllById(cartDeletePr);
   await cart.save();
   const products = cart ? await cart.getGroupedProducts() : [];
 
@@ -115,4 +115,4 @@ export const cartDeleteProduct = async (ctx: SceneContextMessageUpdate): Promise
 
   const keyboard = createSelectToEditKeyboard(products);
   await ctx.editMessageText(await generateCartList(cart), Extra.HTML().markup(keyboard));
-}
+};

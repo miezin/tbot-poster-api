@@ -33,10 +33,12 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 const loggerWithCtx = {
-  debug: (ctx: ContextMessageUpdate, msg: string, ...data: any[]) =>
-    logger.debug(prepareMessage(ctx, msg, ...data)),
-  error: (ctx: ContextMessageUpdate, msg: string, ...data: any[]) =>
-    logger.error(prepareMessage(ctx, msg, ...data))
+  debug: (ctx: ContextMessageUpdate, msg: string, ...data: any[]): void => {
+    logger.debug(prepareMessage(ctx, msg, ...data));
+  },
+  error: (ctx: ContextMessageUpdate, msg: string, ...data: any[]): void => {
+    logger.error(prepareMessage(ctx, msg, ...data));
+  }
 };
 
 export default loggerWithCtx;

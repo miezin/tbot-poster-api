@@ -11,7 +11,7 @@ export const updateUserActivity = async (ctx: ContextMessageUpdate, next: HookNe
     },
     {
       chatId: String(chatId),
-      username: username,
+      username,
       firstName: first_name,
       lastName: last_name || '',
       language: language_code as 'en' | 'ru' | 'ua'

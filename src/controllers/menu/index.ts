@@ -16,7 +16,7 @@ menu.enter(async (ctx: SceneContextMessageUpdate) => {
   const { reference } = ctx.scene.state as ActionState;
   const uid = String(ctx.from.id);
   const categories = await PosterService.getCategories();
-  const cart = await Cart.findOne({_id: uid})
+  const cart = await Cart.findOne({ _id: uid });
   const cartTotal = cart ? cart.getTotal() : null;
   const keyboard = createCategoriesKeyboard(categories, cartTotal);
 
@@ -25,7 +25,6 @@ menu.enter(async (ctx: SceneContextMessageUpdate) => {
   } else {
     await ctx.reply('Выберите категорию 👇', Extra.markup(keyboard));
   }
-
 });
 
 export default menu;

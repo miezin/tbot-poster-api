@@ -1,6 +1,6 @@
-import { Markup } from "telegraf";
-import { ReplyKeyboardMarkup } from "telegraf/typings/telegram-types";
-import { MainKeyboard } from '../config/texts';
+import { Markup } from 'telegraf';
+import { ReplyKeyboardMarkup } from 'telegraf/typings/telegram-types';
+import { MainKeyboard } from '../config/enums';
 
 export const createMainKeyboard = (): Markup & ReplyKeyboardMarkup => {
   return Markup.keyboard(
@@ -8,4 +8,4 @@ export const createMainKeyboard = (): Markup & ReplyKeyboardMarkup => {
       [MainKeyboard.menu, MainKeyboard.cart],
       [MainKeyboard.contacts]
     ], {}).resize();
-}
+};
